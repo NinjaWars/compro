@@ -1,0 +1,4 @@
+#ln -s gitignoreSample .gitignore or replace with your own specific .gitignore file.
+*~
+/.gitignore
+.htaccess
