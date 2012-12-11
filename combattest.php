@@ -1,4 +1,7 @@
 <?php
+include('combatrendering.php'); // All output rendering & displaying should go here.
+
+
 define('STRIKE_HI', 0);
 define('STRIKE_MID', 1);
 define('STRIKE_LO', 2);
@@ -85,6 +88,7 @@ class CombatSession
 	private $m_points = 0;
 	private $m_defenseIndex = 0;
 	private $m_offenseIndex = 0;
+	private $outcome = array();
 
 	public function __construct($p_attacker, $p_defender)
 	{
@@ -122,6 +126,20 @@ class CombatSession
 		$this->m_actors['attacker']->setOffense($p_moves);
 	}
 
+	// Add a single entry to the outcome, including current hitpoints for both sides.
+	private function addSpar($message, $attacker_hp, $defender_hp)
+	{
+		// Append array of information to the outcome.
+		$this->outcome[] = array('message'=>$message, 'attacker_hp'=>$attacker_hp, 'defender_hp'=>$defender_hp);
+	}
+	
+	// Get the entire outcome for display rendering.
+	public function outcome()
+	{
+		return $this->outcome;
+	}
+
+
 	public function strife()
 	{
 		$breaker       = 0;
@@ -134,7 +152,10 @@ class CombatSession
 		$defenseSequence = $this->m_actors['defender']->getDefense();
 		$end             = count($offenseSequence);
 		$pattern         = count($defenseSequence);
-
+		
+		$spar_block = ''; // The combined messages that will be displayed per round of combat.
+		
+		// Is this a single round, or a single happening-between-inputs period?
 		for ($this->m_offenseIndex = 0; $this->m_offenseIndex < $end; $this->m_offenseIndex++, $this->m_defenseIndex++)
 		{
 			$offenseMove = $offenseSequence[$this->m_offenseIndex % $end];
@@ -159,13 +180,13 @@ class CombatSession
 
 			$strife = $this->resolve($offenseMove, $defenseMove);
 
-			if ($strife == 1)
+			if ($strife == 1) // Is this just checking for a boolean?
 			{
 				$this->m_points += $strife;
 				$this->m_actors['defender']->setHP($this->m_actors['defender']->getHP()-1);
 
-				echo $defenseMove, " ";
-				echo "Hit!\n";
+				$spar_block .= $defenseMove. " ";
+				$spar_block .= "Hit!\n";
 
 				$breaker = 0;
 				$comboCounter++;
@@ -176,11 +197,11 @@ class CombatSession
 				{
 					if ($reversalMulti)
 					{
-						echo "C-c-c-combo x$comboCounter X".($reversalMulti+1)."!!!\n";
+						$spar_block .= "C-c-c-combo x$comboCounter X".($reversalMulti+1)."!!!\n";
 					}
 					else
 					{
-						echo "C-c-c-combo x$comboCounter!!!\n";
+						$spar_block .= "C-c-c-combo x$comboCounter!!!\n";
 					}
 				}
 
@@ -194,17 +215,17 @@ class CombatSession
 				// *** THROW ***
 
 				$broken = true;
-				echo $defenseMove, " Your opponent throws you; you land hard!\n";
+				$spar_block .=  $defenseMove. " Your opponent throws you; you land hard!\n";
 				$this->m_actors['attacker']->setHP($this->m_actors['attacker']->getHP()-2);
 			}
 			else if ($breaker > 1)
 			{
 				$broken = true;
-				echo $defenseMove, " ";
+				$spar_block .= $defenseMove. " ";
 
 				if (($strife == 2) || (($this->m_offenseIndex + 1) >= $end))
 				{
-					echo (($strife == 2) ? "Reversal" : "Counter-attack"), "!!!\n";
+					$spar_block .= (($strife == 2) ? "Reversal" : "Counter-attack"). "!!!\n";
 
 					$reverseOffense = $this->createOffense();
 					$reverseDefense = $this->m_actors['attacker']->getDefense();
@@ -228,7 +249,7 @@ class CombatSession
 							$comboCounter = 0;
 							$reverseBreaker = 0;
 							$this->m_actors['attacker']->setHP($this->m_actors['attacker']->getHP()-1);
-							echo "You get hit!\n";
+							$spar_block .= "You get hit!\n";
 						}
 						else
 						{
@@ -236,7 +257,7 @@ class CombatSession
 
 							if ($r == 0)
 							{
-								echo "Double reversal!!!\n";
+								$spar_block .= "Double reversal!!!\n";
 								$reversalMulti++;
 								$broken = false;
 								break;
@@ -244,13 +265,13 @@ class CombatSession
 							else if ($reverseBreaker > 1)
 							{
 								$reversalMulti = 0;
-								echo "You defend!\n";
+								$spar_block .= "You defend!\n";
 								break;
 							}
 							else
 							{
 								$reversalMulti = 0;
-								echo "You block...\n";
+								$spar_block .= "You block...\n";
 							}
 						}
 					}
@@ -258,19 +279,19 @@ class CombatSession
 					if ($q == $reverseEnd)
 					{
 						$reversalMulti = 0;
-						echo "Your opponent steps back and taunts you!!\n";
+						$spar_block .= "Your opponent steps back and taunts you!!\n";
 					}
 				}
 				else if ($comboCounter > 2)
 				{
 					$reversalMulti = 0;
-					echo "C-c-c-combo breaker!!!!!!!\n";
+					$spar_block .= "C-c-c-combo breaker!!!!!!!\n";
 				}
 				else
 				{
 					$reversalMulti = 0;
 					$comboCounter = 0;
-					echo "Miss!\n";
+					$spar_block .= "Miss!\n";
 				}
 			}
 			else if ($breaker > 0)
@@ -278,7 +299,7 @@ class CombatSession
 				$reversalMulti = 0;
 				$comboCounter = 0;
 				echo $defenseMove, " ";
-				echo "Miss!\n";
+				$spar_block .= "Miss!\n";
 			}
 
 			if ($broken) break;
@@ -286,8 +307,11 @@ class CombatSession
 
 		if ($comboCounter > 2)
 		{
-			echo "C-c-c-combo x$comboCounter!!!\n";
+			$spar_block .= "C-c-c-combo x$comboCounter!!!\n";
 		}
+
+		// Set a set of output into the outcome array for later display.
+		$this->addSpar($spar_block, $this->m_actors['attacker']->getHP(), $this->m_actors['defender']->getHP());
 
 		return true;
 	}
@@ -338,6 +362,9 @@ class CombatActor
 	{ return $this->m_hp; }
 }
 
+
+// =================== Start of procedural stuff ==========================
+
 $new = true;
 
 if ($new)
@@ -359,37 +386,8 @@ else
 	$combat = unserialize();
 }
 
-echo <<<THEND
-----------------------------------------
-Hello there! Welcome to the combat prototype last updated 2012-12-10. Aesthetically, imagine a fighting game like Street Fighter.
 
-Both characters have 25 hit points. Each hit takes away 1 hit point.
-
-Mechanically, there are 2 goals:
-	1) Hit your opponent 25 times
-	2) Get sweet combos
-
-You have 7 moves, 0 - 6, and you attack by stringing those numbers together in a sequence like so:
-	> 1244554256623
-
-If you hit your opponent 3 or more times without missing, you'll get a combo! ("C-c-c-combo!!!")
-
-Each number corresponds to a move like STRIKE-HI. Your opponent has a set defensive pattern like BLOCK-HI, BLOCK-LO, DUCK, JUMP. You don't know what the pattern is or how long it is. As you fight, pay attention to the numbers on the left. Those are the defensive moves. Plan your attack sequences to predict the moves of your opponent.
-
-Your attack ends when you miss twice. ("Miss!")
-
-If your last attack is blocked ("Miss!"), your opponent will counter attack ("Counter-attack!"), so you always benefit from long attack sequences. (124563213)
-
-If your attack and your opponent's block are a reversal pair, your opponent will counter-attack ("Reversal!"). If you are lucky enough to block his first counter-attack, you will reverse the reversal! ("Double reversal!")
-
-You take damage during counter-attacks ("You get hit!"). Counter-attacks end when you are lucky enough to successfully block twice in a row ("You defend!") or your opponent's attack sequence ends ("Your opponent taunts you!").
-
-If you attack too predictably, your opponent will throw you for extra damage. ("Your opponent throws you....")
-
---------------FIGHT!---------------
-
-
-THEND;
+display_intro(); // Intro explanation to the fight...
 
 while (!$combat->isComplete())
 {
@@ -415,9 +413,20 @@ while (!$combat->isComplete())
 
 		// *** Pump combat engine ***
 		$combat->strife();
+		
+		// For now, render the results of each sequence input in a group...
+		echo render_combat($combat->outcome());
 	}
 }
 
 // *** Report combat result ***
-echo "You ", ($player1->getHP() > 0 ? 'win' : 'lose'), "!\n";
+
+
+
+
+
+echo render_combat($combat->outcome());
+
+echo render_win_loss($player1); // Display the win, loss, status effects, gold/rewards, etc.
+
 ?>
