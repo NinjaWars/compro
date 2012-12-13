@@ -1,7 +1,7 @@
 <?php
 include('combatrendering.php'); // All output rendering & displaying should go here.
 
-
+// The translations of integers into moves.  Unfortunately, it's hard to translate them back into display messages in this form.  Perhaps they should be remade as array values so that display strings can be applied.
 define('STRIKE_HI', 0);
 define('STRIKE_MID', 1);
 define('STRIKE_LO', 2);
@@ -19,8 +19,9 @@ define('BLOCK_LO', 13);
 define('BLOCK_DUCK_LO', 14);
 define('JUMP', 15);
 define('DUCK', 16);
+
 define('SEQ_MIN', 3);
-define('SEQ_MAX', 255);
+define('SEQ_MAX', 255); // This is probably supposed to be 25, not 255.
 
 class CombatSession
 {
@@ -101,14 +102,17 @@ class CombatSession
 
 	private function createDefense()
 	{
+		// Sets a defense sequence between 10 and 15 long!  Which is pretty damn long.
 		return $this->createSequence(rand(10, 15), 11, 16);
 	}
 
 	private function createOffense()
 	{
+		// Sets an offense sequence between 6 and 10 long!
 		return $this->createSequence(rand(6, 10), 0, 6);
 	}
 
+	// Creates a sequence of integers so long, within the range of two max integers depending on whether it's defense or offense.
 	private function createSequence($p_length, $p_min, $p_max)
 	{
 		$sequence = array();
@@ -139,7 +143,7 @@ class CombatSession
 		return $this->outcome;
 	}
 
-
+	// The main combat comparison section, based on pre-made defense sequences from the defender.
 	public function strife()
 	{
 		$breaker       = 0;
@@ -327,6 +331,7 @@ class CombatSession
 	}
 }
 
+// A defender or attacker's stored state.
 class CombatActor
 {
 	private $m_hp = 0;
@@ -383,7 +388,7 @@ if ($new)
 }
 else
 {
-	$combat = unserialize();
+	$combat = unserialize(); // Currently unused...
 }
 
 
