@@ -1,6 +1,6 @@
 <?php
 require_once('combatrendering.php'); // All output rendering & displaying should go here.
-require_once('combattest.php'); // All output rendering & displaying should go here.
+require_once('combat.php'); // The core combat lib.
 
 // =================== Start of procedural stuff ==========================
 

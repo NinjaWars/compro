@@ -320,7 +320,7 @@ class CombatSession
 			{
 				$reversalMulti = 0;
 				$comboCounter = 0;
-				$spar_block .= $defenseMove, " ";
+				$spar_block .= $defenseMove. " ";
 				$spar_block .= "Miss!\n";
 			}
 
