@@ -33,6 +33,27 @@ define('SEQ_MAX', 255); // This is probably supposed to be 25, not 255.
 
 define('DEBUG', false); // While debugging, display more information than you would with a player.
 
+// Should potentially go in the rendering area eventually, but they're here to keep in sync for now.
+$move_display_strings = array(
+	0=>'Strike Hi',
+	1=>'Strike Mid',
+	2=>'Strike Lo',
+	3=>'Strike and duck lo',
+	4=>'Strike and duck mid',
+	5=>'Jumping high strike',
+	6=>'Jumping middle strike',
+	7=>'Guard',
+	8=>'Reversal Hi',
+	9=>'Reversal Mid',
+	10=>'Reversal Lo',
+	11=>'Block Hi',
+	12=>'Block Mid',
+	13=>'Block Lo',
+	14=>'Block and Duck Lo',
+	15=>'Jump',
+	16=>'Duck',
+);
+
 class CombatSession
 {
 	// 1s indicate attacker success, 0s indicate misses, and 2s indicate potential for reversal.
