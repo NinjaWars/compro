@@ -33,26 +33,28 @@ define('SEQ_MAX', 255); // This is probably supposed to be 25, not 255.
 
 define('DEBUG', false); // While debugging, display more information than you would with a player.
 
-// Should potentially go in the rendering area eventually, but they're here to keep in sync for now.
-$move_display_strings = array(
-	0=>'Strike Hi',
-	1=>'Strike Mid',
-	2=>'Strike Lo',
-	3=>'Strike and duck lo',
-	4=>'Strike and duck mid',
-	5=>'Jumping high strike',
-	6=>'Jumping middle strike',
-	7=>'Guard',
-	8=>'Reversal Hi',
-	9=>'Reversal Mid',
-	10=>'Reversal Lo',
-	11=>'Block Hi',
-	12=>'Block Mid',
-	13=>'Block Lo',
-	14=>'Block and Duck Lo',
-	15=>'Jump',
-	16=>'Duck',
-);
+// Ugly, should potentially go in the rendering area eventually, but they're here to keep in sync with the constants for now.
+function get_move_display_strings(){
+	return array(
+		0=>'Strike Hi',
+		1=>'Strike Mid',
+		2=>'Strike Lo',
+		3=>'Strike and duck lo',
+		4=>'Strike and duck mid',
+		5=>'Jumping high strike',
+		6=>'Jumping middle strike',
+		7=>'Guard',
+		8=>'Reversal Hi',
+		9=>'Reversal Mid',
+		10=>'Reversal Lo',
+		11=>'Block Hi',
+		12=>'Block Mid',
+		13=>'Block Lo',
+		14=>'Block and Duck Lo',
+		15=>'Jump',
+		16=>'Duck',
+	);
+}
 
 class CombatSession
 {
@@ -190,6 +192,7 @@ class CombatSession
 		$defenseSequence = $this->m_actors['defender']->getDefense();
 		$end             = count($offenseSequence);
 		$pattern         = count($defenseSequence);
+		$move_display_strings = get_move_display_strings();
 		
 		if(DEBUG){
 			// Only while debugging clarify the pattern length and attack length.
@@ -228,7 +231,7 @@ class CombatSession
 				$this->m_points += $strife;
 				$this->m_actors['defender']->setHP($this->m_actors['defender']->getHP()-1);
 
-				$spar_block .= $defenseMove. " ";
+				$spar_block .= 'You '.$move_display_strings[$offenseMove].' while your opponent '.$move_display_strings[$defenseMove]. " ";
 				$spar_block .= "Hit!\n";
 
 				$breaker = 0;
@@ -258,13 +261,13 @@ class CombatSession
 				// *** THROW ***
 
 				$broken = true;
-				$spar_block .=  $defenseMove. " Your opponent throws you; you land hard!\n";
+				$spar_block .=  'You '.$move_display_strings[$offenseMove].' while your opponent '.$move_display_strings[$defenseMove]. " Your opponent throws you; you land hard!\n";
 				$this->m_actors['attacker']->setHP($this->m_actors['attacker']->getHP()-2);
 			}
 			else if ($breaker > 1)
 			{
 				$broken = true;
-				$spar_block .= $defenseMove. " ";
+				$spar_block .= 'You '.$move_display_strings[$offenseMove].' while your opponent '.$move_display_strings[$defenseMove]. " ";
 
 				if (($strife == 2) || (($this->m_offenseIndex + 1) >= $end))
 				{
@@ -341,7 +344,7 @@ class CombatSession
 			{
 				$reversalMulti = 0;
 				$comboCounter = 0;
-				$spar_block .= $defenseMove. " ";
+				$spar_block .= 'You '.$move_display_strings[$offenseMove].' while your opponent '.$move_display_strings[$defenseMove]. " ";
 				$spar_block .= "Miss!\n";
 			}
 
