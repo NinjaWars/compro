@@ -1,5 +1,13 @@
 <?php
-require_once('combatrendering.php'); // All output rendering & displaying should go here.
+require_once('combatrendering.php'); // All output rendering & displaying should go in the rendering lib script.
+
+/*
+The core of the combat system, includes the player objects and the combat object, as well as definitions of some attack-type constants.
+*/
+
+
+
+
 
 // The translations of integers into moves.  Unfortunately, it's hard to translate them back into display messages in this form.  Perhaps they should be remade as array values so that display strings can be applied.
 define('STRIKE_HI', 0);
@@ -23,8 +31,11 @@ define('DUCK', 16);
 define('SEQ_MIN', 3);
 define('SEQ_MAX', 255); // This is probably supposed to be 25, not 255.
 
+define('DEBUG', false); // While debugging, display more information than you would with a player.
+
 class CombatSession
 {
+	// 1s indicate attacker success, 0s indicate misses, and 2s indicate potential for reversal.
 	public static $STRIFE_MATRIX = array(
 		STRIKE_HI => array(
 			BLOCK_HI => 0,
@@ -93,7 +104,9 @@ class CombatSession
 
 	public function __construct($p_attacker, $p_defender)
 	{
-		$p_defender->setDefense($this->createDefense());
+		if(count($p_defender->getDefense())<1){ // For now, only set the defender's defense if it hasn't already been set in the defender object initially.
+			$p_defender->setDefense($this->createDefense());
+		}
 		$p_attacker->setDefense($this->createDefense());
 
 		$this->m_actors['attacker'] = $p_attacker;
@@ -157,6 +170,11 @@ class CombatSession
 		$end             = count($offenseSequence);
 		$pattern         = count($defenseSequence);
 		
+		if(DEBUG){
+			// Only while debugging clarify the pattern length and attack length.
+			echo "End length is: ".$end.", pattern length is: ".$pattern."\n";
+		}
+		
 		$spar_block = ''; // The combined messages that will be displayed per round of combat.
 		
 		// Is this a single round, or a single happening-between-inputs period?
@@ -184,7 +202,7 @@ class CombatSession
 
 			$strife = $this->resolve($offenseMove, $defenseMove);
 
-			if ($strife == 1) // Is this just checking for a boolean?
+			if ($strife == 1)
 			{
 				$this->m_points += $strife;
 				$this->m_actors['defender']->setHP($this->m_actors['defender']->getHP()-1);
@@ -302,7 +320,7 @@ class CombatSession
 			{
 				$reversalMulti = 0;
 				$comboCounter = 0;
-				echo $defenseMove, " ";
+				$spar_block .= $defenseMove, " ";
 				$spar_block .= "Miss!\n";
 			}
 
