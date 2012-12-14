@@ -77,9 +77,9 @@ function is_a_loss($outcome){
 }
 
 // hack for echoing out readable messages on failed tests, this is included in php 5.4 but we're not there yet.
-function assert_a_match($result, $message){
+function assert_a_match($result, $message, $test_number){
 	if(!(bool)$result){ // Test failed.
-		echo $message;
+		echo 'Test number ['.$test_number.'] failed: '.$message;
 	}
 	return (bool)$result;
 }
@@ -99,9 +99,9 @@ function testz($expectation, $player1, $player2, &$test_count, &$successful_test
 	$combat->strife();
 	$outcome = $combat->outcome();
 	if($expectation['win']){
-		$pass = assert_a_match(is_a_win($outcome), "Loss when there should have been a win\n");
+		$pass = assert_a_match(is_a_win($outcome), "Loss when there should have been a win\n", $test_number=$test_count+1);
 	} else {
-		$pass = assert_a_match(is_a_loss($outcome), "Win when there should have been a loss\n");
+		$pass = assert_a_match(is_a_loss($outcome), "Win when there should have been a loss\n", $test_number=$test_count+1);
 	}
 	if($pass){
 		$successful_test_count++;
